@@ -170,7 +170,8 @@ def analyze_performance(file_path, position, player_name, player_image_path):
             prompt += f"- {stat}: {value}\n"
         
 
-        completion = clarifai_model.predict_by_bytes(bytes(prompt, 'utf-8'), input_type="text")
+        prompt_bytes = prompt.encode("utf-8")  # Specify the desired encoding
+        completion = clarifai_model.predict_by_bytes(prompt_bytes, input_type="text")
         analysis_result = completion.outputs[0].data.text.raw
 
         # Convert stats dictionary to table format for PDF
