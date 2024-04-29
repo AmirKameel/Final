@@ -179,7 +179,7 @@ def analyze_performance(file_path, position, player_name, player_image_path):
 # Use prompt_bytes for further processing
 
 
-        completion = clarifai_model.predict(prompt, input_type="text")
+        completion = clarifai_model.predict(prompt)
 
 
         analysis_result = completion.outputs[0].data.text.raw
