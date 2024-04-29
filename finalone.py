@@ -184,7 +184,7 @@ def analyze_performance(file_path, position, player_name, player_image_path):
 # Construct Input object from encoded prompt
 
 # Pass the Input object to the predict method
-        completion = clarifai_model.predict_by_bytes(prompt_bytes, input_type="text")
+        completion = clarifai_model.predict_by_bytes(b"""I need you to be a professional football performance analyst for the indivdual players so I need you to create a full report to Analyze the performance and extrcting the strenght and weaknesses of a {position} player based on the following statistics:\n but doesnot return the stats it to the user please.", input_type="text")
 
 # Extract the analysis result from completion
         analysis_result = completion.outputs[0].data.text.raw
