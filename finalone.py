@@ -168,14 +168,21 @@ def analyze_performance(file_path, position, player_name, player_image_path):
         prompt = f"I need you to be a professional football performance analyst for the indivdual players so I need you to create a full report to Analyze the performance and extrcting the strenght and weaknesses of a {position} player based on the following statistics:\n but doesnot return the stats it to the user please."
         for stat, value in stats.items():
             prompt += f"- {stat}: {value}\n"
-        
-        if type(prompt) == str:
+
+        pad = 16 - len(prompt) % 16
+
+        if isinstance(prompt, str):
+            prompt = prompt + (pad * chr(pad))
             prompt_bytes = prompt.encode("utf-8")
-            completion = clarifai_model.predict_by_bytes(prompt_bytes, input_type="text")
+        elif isinstance(prompt, bytes):
+            prompt_bytes = prompt
         else:
             prompt = str(prompt)  # Convert to string if needed
             prompt_bytes = prompt.encode("utf-8")
-            completion = clarifai_model.predict_by_bytes(prompt_bytes, input_type="text")
+
+        completion = clarifai_model.predict_by_bytes(prompt_bytes, input_type="text")
+
+
         analysis_result = completion.outputs[0].data.text.raw
 
         # Convert stats dictionary to table format for PDF
