@@ -179,10 +179,19 @@ def analyze_performance(file_path, position, player_name, player_image_path):
 # Use prompt_bytes for further processing
 
 
-        completion = clarifai_model.predict(prompt)
+        prompt_bytes = prompt.encode("utf-8")
 
+# Construct Input object from encoded prompt
 
+# Pass the Input object to the predict method
+        completion = clarifai_model.predict([prompt_bytes])
+
+# Extract the analysis result from completion
         analysis_result = completion.outputs[0].data.text.raw
+
+# Extract the analysis result from completion
+ 
+
 
         # Convert stats dictionary to table format for PDF
         lines = analysis_result.split("\n")
