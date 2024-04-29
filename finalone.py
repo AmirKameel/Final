@@ -169,18 +169,7 @@ def analyze_performance(file_path, position, player_name, player_image_path):
         for stat, value in stats.items():
             prompt += f"- {stat}: {value}\n"
 
-        pad = 16 - len(prompt) % 16
-
-        if isinstance(prompt, str):
-            prompt = prompt + (pad * chr(pad))
-            prompt_bytes = prompt.encode("utf-8")
-        elif isinstance(prompt, bytes):
-            prompt_bytes = prompt
-        else:
-            prompt = str(prompt)  # Convert to string if needed
-            prompt_bytes = prompt.encode("utf-8")
-
-        completion = clarifai_model.predict_by_bytes(prompt_bytes, input_type="text")
+        completion = clarifai_model.predict_by_bytes(prompt.encode(), input_type="text")
 
 
         analysis_result = completion.outputs[0].data.text.raw
