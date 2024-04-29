@@ -184,7 +184,7 @@ def analyze_performance(file_path, position, player_name, player_image_path):
 # Construct Input object from encoded prompt
 
 # Pass the Input object to the predict method
-        completion = clarifai_model.predict([prompt_bytes])
+        completion = clarifai_model.predict_by_bytes(prompt_bytes, input_type="text")
 
 # Extract the analysis result from completion
         analysis_result = completion.outputs[0].data.text.raw
