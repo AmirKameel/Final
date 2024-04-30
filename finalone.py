@@ -175,7 +175,7 @@ def analyze_performance(file_path, position, player_name, player_image_path):
         completion = clarifai_model.predict_by_filepath(file_path, input_type="text")
 
 # Extract the analysis result from completion
-        analysis_result = completion.outputs[-1].data.concepts
+        analysis_result = completion.outputs[0].text.raw
 
 # Extract the analysis result from completion
  
