@@ -5,7 +5,7 @@ from clarifai.client.model import Model
 import os
 
 # Initialize Clarifai model
-model_url = "https://clarifai.com/openai/chat-completion/models/GPT-3_5-turbo"
+model_url = "https://clarifai.com/openai/chat-completion/models/gpt-4-turbo"
 clarifai_model = Model(url=model_url, pat="a859318378284560beec23442a19ba57")
 
 # Positions dictionary
