@@ -170,10 +170,12 @@ def analyze_performance(file_path, position, player_name, player_image_path):
             prompt += f"- {stat}: {value}\n"
 
 # Pass the Input object to the predict method
-        completion = clarifai_model.predict_by_bytes(b"{prompt}", input_type="text")
+        file_path = "datasets/upload/data/text_files/positive/0_9.txt"
+        
+        completion = clarifai_model.predict_by_filepath(file_path, input_type="text")
 
 # Extract the analysis result from completion
-        analysis_result = completion.outputs[0].data.text.raw
+        analysis_result = completion.outputs[-1].data.concepts
 
 # Extract the analysis result from completion
  
