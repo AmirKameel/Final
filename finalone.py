@@ -5,7 +5,7 @@ from clarifai.client.model import Model
 import os
 
 # Initialize Clarifai model
-model_url = "https://clarifai.com/openai/chat-completion/models/gpt-4-turbo"
+model_url = "https://clarifai.com/openai/chat-completion/models/GPT-3_5-turbo"
 clarifai_model = Model(url=model_url, pat="a859318378284560beec23442a19ba57")
 
 # Positions dictionary
@@ -168,18 +168,15 @@ def analyze_performance(file_path, position, player_name, player_image_path):
         prompt = f"I need you to be a professional football performance analyst for the indivdual players so I need you to create a full report to Analyze the performance and extrcting the strenght and weaknesses of a {position} player based on the following statistics:\n but doesnot return the stats it to the user please."
         for stat, value in stats.items():
             prompt += f"- {stat}: {value}\n"
-
-# Pass the Input object to the predict method
-        file_path = "datasets/upload/data/text_files/positive/0_9.txt"
         
-        completion = clarifai_model.predict_by_filepath(file_path, input_type="text")
-
-# Extract the analysis result from completion
-        analysis_result = completion.outputs[0].text.raw
-
-# Extract the analysis result from completion
- 
-
+        if type(prompt) == str:
+            prompt_bytes = prompt.encode("utf-8")
+            completion = clarifai_model.predict_by_bytes(prompt_bytes, input_type="text")
+        else:
+            prompt = str(prompt)  # Convert to string if needed
+            prompt_bytes = prompt.encode("utf-8")
+            completion = clarifai_model.predict_by_bytes(prompt_bytes, input_type="text")
+        analysis_result = completion.outputs[0].data.text.raw
 
         # Convert stats dictionary to table format for PDF
         lines = analysis_result.split("\n")
