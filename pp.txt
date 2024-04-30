@@ -1,0 +1,1 @@
+I need you to be a professional football performance analyst for the indivdual players so I need you to create a full report to Analyze the performance and extrcting the strenght and weaknesses of a {position} player based on the following statistics:\n but doesnot return the stats it to the user please
