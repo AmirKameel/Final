@@ -3,10 +3,15 @@ import pandas as pd
 from fpdf import FPDF
 from clarifai.client.model import Model
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Initialize Clarifai model
 model_url = "https://clarifai.com/openai/chat-completion/models/gpt-4-turbo"
-clarifai_model = Model(url=model_url, pat="a859318378284560beec23442a19ba57")
+clarifai_pat = os.getenv("CLARIFAI_PAT")
+clarifai_model = Model(url=model_url, pat=clarifai_pat)
 
 # Positions dictionary
 positions = {
