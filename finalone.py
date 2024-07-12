@@ -4,10 +4,8 @@ from fpdf import FPDF
 from PIL import Image
 import os
 from clarifai.client.model import Model
-from streamlit_navigation_bar import st_navbar
 
-# Set up page configuration
-st.set_page_config(page_title="Player Performance Analysis", page_icon="⚽", layout="wide")
+
 
 # Initialize Clarifai model
 model_url = "https://clarifai.com/openai/chat-completion/models/gpt-4o"
