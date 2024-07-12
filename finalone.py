@@ -189,7 +189,7 @@ def analyze_performance(file_path, position, player_name, player_image_path):
             st.error("Unsupported position. Please choose a valid position.")
             return None
 
-        prompt = f"I need you to be a professional football performance analyst for the individual players so I need you to create a full report to analyze the performance and extract the strengths and weaknesses of a {position} then suggest trainings for weaknesses player based on the following statistics:\n"
+        prompt = f"I need you to be a professional football performance analyst for the individual players so I need you to create a full report to analyze the performance in 2 pages then extract the strengths and weaknesses of a {position} then suggest trainings for weaknesses player based on the following statistics:\n"
         for stat, value in stats.items():
             prompt += f"- {stat}: {value}\n"
 
