@@ -8,7 +8,7 @@ from clarifai.client.model import Model
 
 
 # Initialize Clarifai model
-model_url = "https://clarifai.com/openai/chat-completion/models/gpt-4o"
+model_url = "https://clarifai.com/openai/chat-completion/models/GPT-3_5-turbo"
 clarifai_model = Model(url=model_url, pat="8866ee7a609c4b2992a931c11d46ac52")
 
 # Positions dictionary
@@ -189,7 +189,7 @@ def analyze_performance(file_path, position, player_name, player_image_path):
             st.error("Unsupported position. Please choose a valid position.")
             return None
 
-        prompt = f"I need you to be a professional football performance analyst for the individual players so I need you to create a full report to analyze the performance and extract the strengths and weaknesses of a {position} player based on the following statistics:\n"
+        prompt = f"I need you to be a professional football performance analyst for the individual players so I need you to create a full report to analyze the performance and extract the strengths and weaknesses of a {position} then suggest trainings for weaknesses player based on the following statistics:\n"
         for stat, value in stats.items():
             prompt += f"- {stat}: {value}\n"
 
