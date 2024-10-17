@@ -66,24 +66,10 @@ def submit_history():
     st.session_state.widget = ''
 
 
-def start_listening():
-    # callback for the button ' Start Conversation' click
-    st.session_state.recorder.start()
-    st.session_state.already_listening = True
 
 
-def stop_listening():
-    # callback for the button ' Stop Conversation' click
-    if st.session_state.already_listening:
-        # stop recording
-        st.session_state.recorder.stop()
-        print("Stopped Listening")
-        # set the recorded text to session_state.prompt
-        st.session_state.prompt = st.session_state.recorder.text()
-        print("Recorder Prompt Assigned")
-        st.session_state.already_listening = False
-    else:
-        pass
+
+
 
 
 import os
@@ -153,13 +139,8 @@ def st_start():
     # Initialize other session_state global variables
     if 'prompt' not in st.session_state:
         st.session_state.prompt = ''
-    if 'recorder' not in st.session_state:
-        st.session_state.recorder = AudioToTextRecorder(
-            spinner=False, language='en')
     if 'history' not in st.session_state:
         st.session_state.history = ''
-    if 'already_listening' not in st.session_state:
-        st.session_state.already_listening = False
     if 'answer' not in st.session_state:
         st.session_state.answer = ''
 
@@ -176,11 +157,25 @@ def st_start():
     if img:
         st.image(img, caption="Ask some questions about this image.")
 
-    # Initialize voice buttons
+    # Initialize audio recording section
     left_column.markdown(
         '<p class="big-font">Ask with your voice!</p>', unsafe_allow_html=True)
-    left_column.button(' Start Conversation', on_click=start_listening)
-    left_column.button(' End Conversation', on_click=stop_listening)
+    
+    audio = audiorecorder("Click to record", "Click to stop recording")
+
+    if len(audio) > 0:
+        # To play audio in frontend:
+        st.audio(audio.export().read())
+
+        # Save the recorded audio to a temporary file
+        audio.export("audio.wav", format="wav")
+
+        # Display audio properties
+        st.write(f"Frame rate: {audio.frame_rate}, Frame width: {audio.frame_width}, Duration: {audio.duration_seconds} seconds")
+
+        # Process the recorded audio (optional, depending on your needs)
+        with open("audio.wav", "rb") as audio_file:
+            st.session_state.prompt = st.session_state.recorder.text()
 
     # Initialize text areas for prompt, response, and history
     st.markdown('<p class="big-font">Ask a question</p>',
@@ -207,6 +202,3 @@ def st_start():
                 send_to_Gemini(prompt=prompt)
             print(f'AI Vision Response Process Completed')
 
-
-if __name__ == "__main__":
-    st_start()
