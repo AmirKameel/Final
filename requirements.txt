@@ -1,6 +1,6 @@
-streamlit
-pandas
-fpdf2
-clarifai
-python-dotenv
+google-generativeai
 Pillow
+streamlit
+toml
+RealtimeSTT
+pyaudio
