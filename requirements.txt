@@ -3,4 +3,6 @@ Pillow
 streamlit
 toml
 RealtimeSTT
+streamlit-audiorecorder
+pydub
 
