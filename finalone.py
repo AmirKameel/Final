@@ -97,7 +97,7 @@ def configure_gemini():
     st.session_state.model = genai.GenerativeModel("gemini-pro")
     
     # Get the API key from secrets.toml and configure it to Gemini API
-    google_api_key = os.environ["google_api_key"]
+    google_api_key = os.environ["GOOGLE_API_KEY"]
      
 
     if google_api_key:
