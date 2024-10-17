@@ -3,4 +3,4 @@ Pillow
 streamlit
 toml
 RealtimeSTT
-pyaudio
+
