@@ -108,15 +108,20 @@ def initialize_page():
 def st_start():
     initialize_page()
 
-    # Run one time to configure Gemini API
+    # Run one time to configure gemini api
     if 'model' not in st.session_state:
         configure_gemini()
 
     # Initialize other session_state global variables
     if 'prompt' not in st.session_state:
         st.session_state.prompt = ''
+    if 'recorder' not in st.session_state:
+        # Initialize the recorder here if it does not exist
+        st.session_state.recorder = AudioToTextRecorder(spinner=False, language='en')
     if 'history' not in st.session_state:
         st.session_state.history = ''
+    if 'already_listening' not in st.session_state:
+        st.session_state.already_listening = False
     if 'answer' not in st.session_state:
         st.session_state.answer = ''
 
@@ -133,25 +138,11 @@ def st_start():
     if img:
         st.image(img, caption="Ask some questions about this image.")
 
-    # Initialize audio recording section
+    # Initialize voice buttons
     left_column.markdown(
         '<p class="big-font">Ask with your voice!</p>', unsafe_allow_html=True)
-    
-    audio = audiorecorder("Click to record", "Click to stop recording")
-
-    if len(audio) > 0:
-        # To play audio in frontend:
-        st.audio(audio.export().read())
-
-        # Save the recorded audio to a temporary file
-        audio.export("audio.wav", format="wav")
-
-        # Display audio properties
-        st.write(f"Frame rate: {audio.frame_rate}, Frame width: {audio.frame_width}, Duration: {audio.duration_seconds} seconds")
-
-        # Process the recorded audio (optional, depending on your needs)
-        with open("audio.wav", "rb") as audio_file:
-            st.session_state.prompt = st.session_state.recorder.text()
+    left_column.button(' Start Conversation', on_click=start_listening)
+    left_column.button(' End Conversation', on_click=stop_listening)
 
     # Initialize text areas for prompt, response, and history
     st.markdown('<p class="big-font">Ask a question</p>',
@@ -164,19 +155,20 @@ def st_start():
 
     print("Widgets Loaded")
     if len(prompt):
-        # determine which gemini model to use (pro or pro-vision)
+        # determine which gemini modal to use (pro or pro-vision)
         img_exists(img=img)
         # send the prompt to AI if img is True
         if img:
             pil_image = stImg_convert(img)
             with st.spinner('Running...'):
                 send_to_Gemini(prompt=prompt, pil_img=pil_image)
-            print('AI Response Process Completed')
+            print(f'AI Response Process Completed')
         # send the prompt to AI if img is False
         else:
             with st.spinner('Running...'):
                 send_to_Gemini(prompt=prompt)
-            print('AI Response Process Completed')
+            print(f'AI Vision Response Process Completed')
+
 
 if __name__ == "__main__":
     st_start()
