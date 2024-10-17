@@ -105,38 +105,17 @@ def initialize_page():
         """ <style> .big-font {font-size:100px !important;}</style>""", unsafe_allow_html=True)
     st.title(':orange[Blind Date Show]')
 
-def start_listening():
-    # callback for the button ' Start Conversation' click
-    st.session_state.already_listening = True
-    # Recording starts when button is clicked
-    st.session_state.audio = audiorecorder("Click to record", "Click to stop recording")
 
-
-
-def stop_listening():
-    # callback for the button ' Stop Conversation' click
-    if st.session_state.already_listening:
-        if len(st.session_state.audio) > 0:
-            # Save recorded audio
-            st.audio(st.session_state.audio.export().read())  # Play recorded audio
-            st.session_state.prompt = st.session_state.audio.export("audio.wav", format="wav")
-            print("Stopped Listening and saved the audio")
-            st.session_state.already_listening = False
-    else:
-        pass
 
 
 def st_start():
     initialize_page()
 
-    # Run one time to configure gemini api
+    # Configure Gemini API
     if 'model' not in st.session_state:
         configure_gemini()
 
-    # Initialize other session_state global variables
     # Initialize session state variables
-    if 'already_listening' not in st.session_state:
-        st.session_state.already_listening = False
     if 'audio' not in st.session_state:
         st.session_state.audio = None
     if 'prompt' not in st.session_state:
@@ -146,50 +125,45 @@ def st_start():
     if 'answer' not in st.session_state:
         st.session_state.answer = ''
 
-    # Create columns for UI layout
+    # Create layout for the UI: left and right columns
     left_column, right_column = st.columns(2)
 
-    # Buttons for starting and stopping the audio recording
-    left_column.button(' Start Conversation', on_click=start_listening)
-    left_column.button(' End Conversation', on_click=stop_listening)
+    # Left column: Audio recorder
+    st.markdown('<p class="big-font">Record your question</p>', unsafe_allow_html=True)
+    audio = audiorecorder("Click to record", "Click to stop recording")
 
+    if len(audio) > 0:
+        # Play the recorded audio
+        st.audio(audio.export().read())  
+
+        # Save the audio file as "audio.wav"
+        audio.export("audio.wav", format="wav")
+        
+        # Set the audio file as the prompt (for simplicity)
+        st.session_state.prompt = "Audio question has been recorded."
+
+    # Right column: Upload an image (optional)
+    right_column.markdown('<p class="big-font">Insert an image</p>', unsafe_allow_html=True)
+    img = right_column.file_uploader(label='nothing', label_visibility='collapsed', type=['jpg', 'jpeg', 'png', 'gif'])
     
-    # Display image
-    st.session_state.markdown = st.markdown(
-        """ <style> .big-font {font-size:25px !important;}</style>""", unsafe_allow_html=True)
-    right_column.markdown(
-        '<p class="big-font">Insert an image</p>', unsafe_allow_html=True)
-    img = right_column.file_uploader(
-        label='nothing', label_visibility='collapsed', type=['jpg', 'jpeg', 'png', 'gif'])
     if img:
         st.image(img, caption="Ask some questions about this image.")
 
+    # Ask a question via text area
+    st.markdown('<p class="big-font">Ask a question</p>', unsafe_allow_html=True)
+    st.text_area(label=" Ask the AI a question", label_visibility='collapsed', key='widget', height=200)
+    prompt = st.session_state.prompt or st.session_state.widget
 
-    # Initialize text areas for prompt, response, and history
-    st.markdown('<p class="big-font">Ask a question</p>',
-                unsafe_allow_html=True)
-    st.text_area(label=" Ask the AI a question", label_visibility='collapsed',
-                 on_change=submit_history, key='widget', height=200)
-
-    # create the prompt attribute to session_state to store current prompt
-    prompt = st.session_state.prompt
-
-    print("Widgets Loaded")
     if len(prompt):
-        # determine which gemini modal to use (pro or pro-vision)
-        img_exists(img=img)
-        # send the prompt to AI if img is True
+        # Check if an image is uploaded, use it if available
         if img:
             pil_image = stImg_convert(img)
             with st.spinner('Running...'):
                 send_to_Gemini(prompt=prompt, pil_img=pil_image)
-            print(f'AI Response Process Completed')
-        # send the prompt to AI if img is False
         else:
             with st.spinner('Running...'):
                 send_to_Gemini(prompt=prompt)
-            print(f'AI Vision Response Process Completed')
-
 
 if __name__ == "__main__":
     st_start()
+
