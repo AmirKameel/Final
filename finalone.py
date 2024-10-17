@@ -1,14 +1,12 @@
 # loads genai API Key from .env file
 
 import google.generativeai as genai  # Gemini API key
-
 import io  # file conversions
 import os  # system import
 from PIL import Image  # file conversions
-
 import streamlit as st  # build up website
-from RealtimeSTT import AudioToTextRecorder  # audio recorder
-
+from audiorecorder import audiorecorder  # new audio recorder
+import toml  # for reading env keys
 
 def gemini_answer(prompt, img=None):
     # Sends response
@@ -23,29 +21,27 @@ def gemini_answer(prompt, img=None):
     except ValueError:
         return 'Please rephrase your prompt to a more appropriate inquiry.'
 
-
 def stImg_convert(st_img):
     '''
-    Converts the image returned from streamlit's format into\nanotherformat readable by Gemini Pro Vision: pil
+    Converts the image returned from streamlit's format into
+    another format readable by Gemini Pro Vision: pil
     '''
     image_data = st_img.read()
     # converts streamlit image to pil image
     pil_image = Image.open(io.BytesIO(image_data))
     return pil_image
 
-
 def answer_output(answer):
     '''
     Shows Gemini response in the output text area
     '''
-    print(f"HY: answer_output AI Answer: {answer}")
+    print(f"AI Answer: {answer}")
     st.session_state.answer = answer
     st.markdown('<p class="big-font">Gemini Answer</p>',
                 unsafe_allow_html=True)
     st.text_area(label='Gemini Answer:', label_visibility='collapsed', value=st.session_state.answer,
                  height=250, key='answer_output')
     st.divider()
-
 
 def save_history(prompt, answer):
     '''
@@ -57,42 +53,25 @@ def save_history(prompt, answer):
     st.text_area(label="Session history", label_visibility='collapsed', height=400,
                  value=st.session_state.history, key='history_text_area')
 
-
 def submit_history():
     '''
-    submits the current text into another session_state var and clears .widget
+    Submits the current text into another session_state var and clears .widget
     '''
     st.session_state.prompt = st.session_state.widget
     st.session_state.widget = ''
 
-
-
-
-
-
-
-
-import os
-import toml
-
 def configure_gemini():
-    # Load the secrets from the secrets.toml file
-    
-
+    # Load the API key from environment variables
+    google_api_key = os.environ.get("GOOGLE_API_KEY")
+     
     # Configure Gemini model
     st.session_state.model = genai.GenerativeModel("gemini-pro")
     
-    # Get the API key from secrets.toml and configure it to Gemini API
-    google_api_key = os.environ["GOOGLE_API_KEY"]
-     
-
     if google_api_key:
         genai.configure(api_key=google_api_key)
         print("Gemini Configured")
     else:
-        print("API key not found in secrets.toml")
-
-
+        print("API key not found")
 
 def img_exists(img):
     '''
@@ -101,17 +80,16 @@ def img_exists(img):
     '''
     if img:
         st.session_state.model = genai.GenerativeModel("gemini-1.5-flash")
-        print(f"-- Gemini-Pro-Vision Enabled")
+        print("-- Gemini-Pro-Vision Enabled")
     elif not img:
         st.session_state.model = genai.GenerativeModel("gemini-pro")
-        print(f"-- Gemini-Pro Enabled")
-
+        print("-- Gemini-Pro Enabled")
 
 def send_to_Gemini(prompt, pil_img=None):
     print('AI Response Processing Started')
     if pil_img:
         answer = gemini_answer(prompt=prompt, img=pil_img)
-    elif not pil_img:
+    else:
         answer = gemini_answer(prompt=prompt)
     answer_output(answer=answer)
     save_history(prompt=prompt, answer=answer)
@@ -120,19 +98,17 @@ def send_to_Gemini(prompt, pil_img=None):
     prompt = ''
     answer = ''
 
-
 def initialize_page():
-    # initialize the webpage title
+    # Initialize the webpage title
     st.set_page_config(layout="centered")
     st.session_state.markdown2 = st.markdown(
         """ <style> .big-font {font-size:100px !important;}</style>""", unsafe_allow_html=True)
     st.title(':orange[Blind Date Show]')
 
-
 def st_start():
     initialize_page()
 
-    # Run one time to configure gemini api
+    # Run one time to configure Gemini API
     if 'model' not in st.session_state:
         configure_gemini()
 
@@ -188,17 +164,19 @@ def st_start():
 
     print("Widgets Loaded")
     if len(prompt):
-        # determine which gemini modal to use (pro or pro-vision)
+        # determine which gemini model to use (pro or pro-vision)
         img_exists(img=img)
         # send the prompt to AI if img is True
         if img:
             pil_image = stImg_convert(img)
             with st.spinner('Running...'):
                 send_to_Gemini(prompt=prompt, pil_img=pil_image)
-            print(f'AI Response Process Completed')
+            print('AI Response Process Completed')
         # send the prompt to AI if img is False
         else:
             with st.spinner('Running...'):
                 send_to_Gemini(prompt=prompt)
-            print(f'AI Vision Response Process Completed')
+            print('AI Response Process Completed')
 
+if __name__ == "__main__":
+    st_start()
