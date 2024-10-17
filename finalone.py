@@ -105,6 +105,27 @@ def initialize_page():
         """ <style> .big-font {font-size:100px !important;}</style>""", unsafe_allow_html=True)
     st.title(':orange[Blind Date Show]')
 
+def start_listening():
+    # callback for the button ' Start Conversation' click
+    st.session_state.already_listening = True
+    # Recording starts when button is clicked
+    st.session_state.audio = audiorecorder("Click to record", "Click to stop recording")
+
+
+
+def stop_listening():
+    # callback for the button ' Stop Conversation' click
+    if st.session_state.already_listening:
+        if len(st.session_state.audio) > 0:
+            # Save recorded audio
+            st.audio(st.session_state.audio.export().read())  # Play recorded audio
+            st.session_state.prompt = st.session_state.audio.export("audio.wav", format="wav")
+            print("Stopped Listening and saved the audio")
+            st.session_state.already_listening = False
+    else:
+        pass
+
+
 def st_start():
     initialize_page()
 
@@ -113,21 +134,26 @@ def st_start():
         configure_gemini()
 
     # Initialize other session_state global variables
-    if 'prompt' not in st.session_state:
-        st.session_state.prompt = ''
-    if 'recorder' not in st.session_state:
-        # Initialize the recorder here if it does not exist
-        st.session_state.recorder = AudioToTextRecorder(spinner=False, language='en')
-    if 'history' not in st.session_state:
-        st.session_state.history = ''
+    # Initialize session state variables
     if 'already_listening' not in st.session_state:
         st.session_state.already_listening = False
+    if 'audio' not in st.session_state:
+        st.session_state.audio = None
+    if 'prompt' not in st.session_state:
+        st.session_state.prompt = ''
+    if 'history' not in st.session_state:
+        st.session_state.history = ''
     if 'answer' not in st.session_state:
         st.session_state.answer = ''
 
-    # Create two columns
+    # Create columns for UI layout
     left_column, right_column = st.columns(2)
 
+    # Buttons for starting and stopping the audio recording
+    left_column.button(' Start Conversation', on_click=start_listening)
+    left_column.button(' End Conversation', on_click=stop_listening)
+
+    
     # Display image
     st.session_state.markdown = st.markdown(
         """ <style> .big-font {font-size:25px !important;}</style>""", unsafe_allow_html=True)
@@ -138,11 +164,6 @@ def st_start():
     if img:
         st.image(img, caption="Ask some questions about this image.")
 
-    # Initialize voice buttons
-    left_column.markdown(
-        '<p class="big-font">Ask with your voice!</p>', unsafe_allow_html=True)
-    left_column.button(' Start Conversation', on_click=start_listening)
-    left_column.button(' End Conversation', on_click=stop_listening)
 
     # Initialize text areas for prompt, response, and history
     st.markdown('<p class="big-font">Ask a question</p>',
