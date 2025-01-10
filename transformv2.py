@@ -30,9 +30,10 @@ class TransformedColor:
 class EnhancedContentTransformationAgent:
     
     """Enhanced agent for transforming extracted Elementor content using GPT"""
-    def __init__(self, openai_api_key):
-        
-        openai.api_key = os.getenv('OPENAI_API_KEY')
+    def __init__(self, openai_api_key: str):
+        if not openai_api_key:
+            raise ValueError("OpenAI API key is missing. Ensure it is set as an environment variable.")
+        openai.api_key = openai_api_key
    
         
 
