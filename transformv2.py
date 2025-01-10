@@ -1,6 +1,6 @@
+import os
+from openai import OpenAI
 import json
-import openai
-import re
 from typing import Dict, List, Any
 from dataclasses import dataclass
 import os
@@ -31,8 +31,7 @@ class EnhancedContentTransformationAgent:
     """Enhanced agent for transforming extracted Elementor content using GPT"""
     
     def __init__(self, api_key: str):
-        self.api_key = api_key
-        openai.api_key = api_key
+        self.client = OpenAI(api_key=api_key)
 
     def transform_content(self, 
                          rag_input_path: str, 
@@ -78,7 +77,9 @@ class EnhancedContentTransformationAgent:
                 }
 
             # Save transformed content
-            self._save_transformed_content(transformed_data, transformed_output_path)
+            os.makedirs(os.path.dirname(transformed_output_path), exist_ok=True)
+            with open(transformed_output_path, 'w', encoding='utf-8') as f:
+                json.dump(transformed_data, f, indent=2, ensure_ascii=False)
             
             print(f"Transformation complete. Results saved to {transformed_output_path}")
             
@@ -128,7 +129,7 @@ Generate unique, contextual content for each text element while preserving the m
                 }
             ]
 
-            response = openai.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo-0125",
                 messages=messages,
                 temperature=0.7,
@@ -187,7 +188,7 @@ Generate unique, contextual content for each text element while preserving the m
     def _transform_colors(self, colors: List[Dict], style_description: str) -> List[Dict]:
         """Transform colors using GPT"""
         try:
-            response = openai.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo-0125",
                 messages=[{
                     "role": "system",
@@ -202,12 +203,14 @@ Generate unique, contextual content for each text element while preserving the m
                     "role": "user",
                     "content": f"""Transform these colors to match: {style_description}
 
+                   
                     Original colors:
                     {json.dumps(colors, indent=2)}
 
                     Return new colors in the same structure, preserving metadata."""
                 }],
-                temperature=0.7
+                temperature=0.7,
+                max_tokens=2048
             )
             
             transformed_colors = []
@@ -260,9 +263,13 @@ Generate unique, contextual content for each text element while preserving the m
                 transformation_notes=f"Error during transformation: {str(e)}"
             )) for color in colors]
 
-    def _save_transformed_content(self, data: Dict, output_path: str) -> None:
-        """Save transformed content with proper formatting"""
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
-
+    def _clean_color_value(self, color: str) -> str:
+        """Clean and validate color hex values"""
+        if not color.startswith('#'):
+            color = f'#{color}'
+        
+        # Ensure 6-digit hex
+        if len(color) == 4:  # 3-digit hex
+            color = f'#{color[1]*2}{color[2]*2}{color[3]*2}'
+            
+        return color.upper()
