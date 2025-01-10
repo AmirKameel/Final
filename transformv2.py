@@ -33,7 +33,7 @@ class EnhancedContentTransformationAgent:
     def __init__(self, openai_api_key: str):
         if not openai_api_key:
             raise ValueError("OpenAI API key is missing. Ensure it is set as an environment variable.")
-        openai.api_key = openai_api_key
+        OpenAI.api_key = openai_api_key
    
         
 
