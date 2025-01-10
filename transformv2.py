@@ -31,7 +31,7 @@ class EnhancedContentTransformationAgent:
     
     """Enhanced agent for transforming extracted Elementor content using GPT"""
     def __init__(self, openai_api_key: str):
-        self.api_key = api_key
+        
         openai.api_key = os.getenv('OPENAI_API_KEY')
    
         
