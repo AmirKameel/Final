@@ -62,7 +62,7 @@ class ElementorOrchestrator:
             )
             
             # Step 3: Replace content in XML
-            self.replacement_agent.replace_content(
+            self.replacement_agent.replace_text_and_colors(
                 xml_path=input_xml_path,
                 transformed_content_path=transformed_path,
                 output_xml_path=output_xml_path
