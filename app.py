@@ -9,9 +9,9 @@ from datetime import datetime
 import xml.etree.ElementTree as ET
 import httpx
 
-from extract_agent import ElementorExtractionAgent
-from transform_agent import ContentTransformationAgent
-from apply_agent import ContentApplicationAgent
+from exctractv2 import ElementorExtractionAgent
+from transformv2 import ContentTransformationAgent
+from replacev2 import ContentApplicationAgent
 
 
 
