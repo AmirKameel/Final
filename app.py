@@ -11,7 +11,7 @@ import httpx
 
 from exctractv2 import ElementorExtractionAgent
 from transformv2 import ContentTransformationAgent
-from replacev2 import ContentApplicationAgent
+from replacev2 import replace_text_and_colors
 
 
 
@@ -32,7 +32,7 @@ class ThemeTransformer:
     def __init__(self, api_key: str):
         self.extraction_agent = ElementorExtractionAgent()
         self.transformation_agent = ContentTransformationAgent(api_key)
-        self.application_agent = ContentApplicationAgent()
+      
         
         # Create work directories
         self.base_dir = "workdir"
@@ -85,7 +85,7 @@ class ThemeTransformer:
             
             # Apply transformations
             output_path = os.path.join(self.base_dir, "output", f"{job_id}.xml")
-            self.application_agent.replace_text_and_colors(
+            replace_text_and_colors(
                 input_path,
                 transformed_path,
                 output_path
