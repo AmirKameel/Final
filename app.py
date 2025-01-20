@@ -28,9 +28,9 @@ def allowed_file(filename: str) -> bool:
 
 class ElementorOrchestrator:
     def __init__(self, openai_api_key: str):
-        self.extraction_agent = EnhancedElementorExtractionAgent()
-        self.transformation_agent = EnhancedContentTransformationAgent(openai_api_key)
-        self.replacement_agent = ElementorReplacementAgent()
+        self.extraction_agent = ElementorExtractionAgent()
+        self.transformation_agent = ContentTransformationAgent(openai_api_key)
+        self.replacement_agent = ContentApplicationAgent()
         
     def process_wordpress_export(self, 
                                input_xml_path: str,
