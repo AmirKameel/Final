@@ -7,9 +7,9 @@ import json
 from datetime import datetime
 
 # Import the agents
-from exctractv2 import EnhancedElementorExtractionAgent
-from transformv2 import EnhancedContentTransformationAgent
-from replacev2 import ElementorReplacementAgent
+from exctractv2 import ElementorExtractionAgent
+from transformv2 import ContentTransformationAgent
+from replacev2 import ContentApplicationAgent
 
 app = Flask(__name__)
 
