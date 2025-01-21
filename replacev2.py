@@ -67,13 +67,4 @@ def replace_text_and_colors(xml_file_path, json_file_path, output_file_path):
     tree.write(output_file_path, encoding='utf-8', xml_declaration=True)
     print(f"Updated XML has been saved to {output_file_path}")
 
-# Paths to the input files
-xml_file_path = "input/gbptheme.WordPress.2024-11-13.xml"  
-json_file_path = "data/transformed_content.json"  
-output_file_path = "output/modified_wordpress_export2.xml"  
 
-# Run the transformation
-try:
-    replace_text_and_colors(xml_file_path, json_file_path, output_file_path)
-except Exception as e:
-    print(f"Error: {e}")
