@@ -130,9 +130,3 @@ class ElementorExtractionAgent:
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
 
-if __name__ == '__main__':
-    extractor = ElementorExtractionAgent()
-    extractor.extract_content(
-        xml_path='exampls/66.xml',
-        rag_output_path='data/elementor_extracted_content2.json'
-    )
