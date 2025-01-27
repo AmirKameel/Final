@@ -92,6 +92,21 @@ def replace_text_and_colors(xml_file_path, json_file_path, output_file_path):
         data["color_palette"]["original_colors"],
         data["color_palette"]["new_colors"]
     ))
+
+    # Replace text in the XML (based on your provided method)
+    for transformation in text_transformations:
+        original_text = transformation["original"]
+        transformed_text = transformation["transformed"]
+        for elem in root.iter():
+            if elem.text and original_text in elem.text:
+                elem.text = elem.text.replace(original_text, transformed_text)
+            if elem.tail and original_text in elem.tail:
+                elem.tail = elem.tail.replace(original_text, transformed_text)
+            if elem.attrib:
+                for attr_key, attr_value in elem.attrib.items():
+                    if original_text in attr_value:
+                        elem.attrib[attr_key] = attr_value.replace(original_text, transformed_text)
+
     
     # Store original background colors
     original_colors = {}
