@@ -13,8 +13,6 @@ from exctractv2 import ElementorExtractionAgent
 from transformv2 import ContentTransformationAgent
 from replacev2 import replace_text_and_colors
 
-
-
 class TransformationResponse(BaseModel):
     job_id: str
     status: str
@@ -33,7 +31,6 @@ class ThemeTransformer:
         self.extraction_agent = ElementorExtractionAgent()
         self.transformation_agent = ContentTransformationAgent(api_key)
       
-        
         # Create work directories
         self.base_dir = "workdir"
         for dir in ["uploads", "processing", "output"]:
@@ -49,6 +46,19 @@ class ThemeTransformer:
             return True
         except ET.ParseError:
             return False
+
+    async def download_xml_from_url(self, url: str, save_path: str):
+        """Download XML file from a URL"""
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(url)
+                response.raise_for_status()
+                with open(save_path, "wb") as file:
+                    file.write(response.content)
+            except httpx.RequestError as e:
+                raise HTTPException(status_code=400, detail=f"Failed to download XML from URL: {str(e)}")
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
 
     async def process_theme(self, job_id: str, input_path: str, style_description: str, webhook_url: Optional[str] = None):
         """Process theme transformation asynchronously"""
@@ -155,7 +165,8 @@ transformer = ThemeTransformer(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.post("/transform", response_model=TransformationResponse)
 async def transform_theme(
-    theme_file: UploadFile = File(...),
+    theme_file: Optional[UploadFile] = File(None),
+    theme_url: Optional[str] = Form(None),
     style_description: str = Form(...),
     webhook_url: Optional[str] = Form(None),
     background_tasks: BackgroundTasks = BackgroundTasks()
@@ -165,17 +176,24 @@ async def transform_theme(
     job_id = str(uuid.uuid4())
     
     try:
-        # Validate file extension
-        if not theme_file.filename.endswith('.xml'):
-            raise HTTPException(status_code=400, detail="Only XML files are supported")
-            
-        # Save uploaded file
+        # Validate input
+        if not theme_file and not theme_url:
+            raise HTTPException(status_code=400, detail="Either a file or a URL must be provided")
+        
+        # Save uploaded file or download from URL
         input_path = os.path.join(transformer.base_dir, "uploads", f"{job_id}.xml")
-        try:
-            with open(input_path, "wb") as buffer:
-                shutil.copyfileobj(theme_file.file, buffer)
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Failed to save file: {str(e)}")
+        
+        if theme_file:
+            if not theme_file.filename.endswith('.xml'):
+                raise HTTPException(status_code=400, detail="Only XML files are supported")
+                
+            try:
+                with open(input_path, "wb") as buffer:
+                    shutil.copyfileobj(theme_file.file, buffer)
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"Failed to save file: {str(e)}")
+        else:
+            await transformer.download_xml_from_url(theme_url, input_path)
         
         # Validate XML structure
         if not transformer.validate_xml(input_path):
