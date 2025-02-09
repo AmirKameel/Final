@@ -182,6 +182,7 @@ class ContentTransformationAgent:
                     "content": """You are a color palette generator for WordPress themes.
                     Generate new hex colors that match the requested style.
                     Always provide completely different colors than the original.
+                    And generate diffrent range of the wanted colors not just generate red for all replacement if the user want red no generate red and diffrent range of the red colors
                     Return ONLY the new colors in the exact same format as the input, preserving case.
                     """
                 },
