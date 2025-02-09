@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 import os
 
 def scan_background_colors(elementor_data):
-    """Scan and store original background colors"""
+    """Scan and store white background colors only"""
     bg_colors = {}
     
     def scan_element(element):
@@ -12,7 +12,7 @@ def scan_background_colors(elementor_data):
                 element_id = element['id']
                 settings = element['settings']
                 
-                # Background color keys to preserve
+                # Background color keys to check
                 bg_keys = [
                     'background_color',
                     'background_overlay_color',
@@ -21,16 +21,15 @@ def scan_background_colors(elementor_data):
                     'background_overlay_background'
                 ]
                 
-                # Store original colors
+                # Store only white background colors
                 for key in bg_keys:
                     if key in settings and settings[key]:
-                        if element_id not in bg_colors:
-                            bg_colors[element_id] = {}
-                        bg_colors[element_id][key] = settings[key]
-            
-            if 'elements' in element:
-                for child in element['elements']:
-                    scan_element(child)
+                        # Check if the color is white (case insensitive)
+                        color_value = settings[key].lower()
+                        if color_value in ['#ffffff', '#fff', 'white']:
+                            if element_id not in bg_colors:
+                                bg_colors[element_id] = {}
+                            bg_colors[element_id][key] = settings[key]
     
     if isinstance(elementor_data, list):
         for item in elementor_data:
@@ -40,8 +39,8 @@ def scan_background_colors(elementor_data):
     
     return bg_colors
 
-def process_elementor_data(elementor_data, color_map, original_bg_colors):
-    """Process colors while preserving backgrounds"""
+def process_elementor_data(elementor_data, color_map, white_bg_colors):
+    """Process colors while preserving white backgrounds"""
     
     def process_element(element):
         if isinstance(element, dict):
@@ -49,18 +48,25 @@ def process_elementor_data(elementor_data, color_map, original_bg_colors):
                 settings = element['settings']
                 element_id = element['id']
                 
-                # Restore original background colors
-                if element_id in original_bg_colors:
-                    for key, value in original_bg_colors[element_id].items():
+                # Restore white background colors
+                if element_id in white_bg_colors:
+                    for key, value in white_bg_colors[element_id].items():
                         settings[key] = value
                 
-                # Replace other colors in settings
-                if isinstance(settings, dict):  # Add type check
-                    for setting_key in list(settings.keys()):  # Convert to list to avoid runtime modification
+                # Process all other colors including non-white backgrounds
+                if isinstance(settings, dict):
+                    for setting_key in list(settings.keys()):
                         value = settings[setting_key]
                         if isinstance(value, str):
-                            # Skip background-related keys
-                            if not any(bg in setting_key.lower() for bg in ['background', 'bg_']):
+                            # For background-related keys, only replace if not white
+                            if any(bg in setting_key.lower() for bg in ['background', 'bg_']):
+                                value_lower = value.lower()
+                                if value_lower not in ['#ffffff', '#fff', 'white']:
+                                    for orig_color in color_map:
+                                        if orig_color in value:
+                                            settings[setting_key] = value.replace(orig_color, color_map[orig_color])
+                            # For non-background colors, replace normally
+                            else:
                                 for orig_color in color_map:
                                     if orig_color in value:
                                         settings[setting_key] = value.replace(orig_color, color_map[orig_color])
@@ -70,7 +76,6 @@ def process_elementor_data(elementor_data, color_map, original_bg_colors):
                 for child in element['elements']:
                     process_element(child)
                     
-    # Handle both list and dict input
     if isinstance(elementor_data, list):
         for item in elementor_data:
             process_element(item)
@@ -93,7 +98,7 @@ def replace_text_and_colors(xml_file_path, json_file_path, output_file_path):
         data["color_palette"]["new_colors"]
     ))
 
-    # Replace text in the XML (based on your provided method)
+    # Replace text in the XML
     for transformation in text_transformations:
         original_text = transformation["original"]
         transformed_text = transformation["transformed"]
@@ -106,29 +111,27 @@ def replace_text_and_colors(xml_file_path, json_file_path, output_file_path):
                 for attr_key, attr_value in elem.attrib.items():
                     if original_text in attr_value:
                         elem.attrib[attr_key] = attr_value.replace(original_text, transformed_text)
-
     
-    # Store original background colors
-    original_colors = {}
+    # Store white background colors only
+    white_colors = {}
     for item in root.findall('.//wp:meta_value', {'wp': 'http://wordpress.org/export/1.2/'}):
         if item.text and '[{' in item.text:
             try:
                 elementor_data = json.loads(item.text)
                 page_colors = scan_background_colors(elementor_data)
-                original_colors.update(page_colors)
+                white_colors.update(page_colors)
             except json.JSONDecodeError:
                 continue
     
-    # Process XML with preserved backgrounds
+    # Process XML with preserved white backgrounds
     for item in root.findall('.//wp:meta_value', {'wp': 'http://wordpress.org/export/1.2/'}):
         if item.text and '[{' in item.text:
             try:
                 elementor_data = json.loads(item.text)
-                modified_data = process_elementor_data(elementor_data, color_map, original_colors)
+                modified_data = process_elementor_data(elementor_data, color_map, white_colors)
                 item.text = json.dumps(modified_data)
             except json.JSONDecodeError:
                 continue
     
     os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
     tree.write(output_file_path, encoding='utf-8', xml_declaration=True)
-
